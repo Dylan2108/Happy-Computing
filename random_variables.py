@@ -50,3 +50,16 @@ def poisson(_lambda):
         p *= random.random()
     
     return k
+
+def generate_service_type():
+
+    u = random.random()
+
+    if u <= 0.45:
+        return 1
+    elif u <= 0.70:
+        return 2
+    elif u <= 0.80:
+        return 3
+    else:
+        return 4
