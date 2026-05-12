@@ -63,3 +63,16 @@ def generate_service_type():
         return 3
     else:
         return 4
+
+def arrival_time():
+    return poisson(20)
+
+def seller_service_time():
+    service_time = normal(5,2)
+    return abs(service_time)
+
+def repair_time():
+    return exponential(20)
+
+def equipment_change_time():
+    return exponential(15)
