@@ -48,14 +48,16 @@ class Simulation:
         clients_in_system: Clientes actualmente en el sistema.
     """
 
-    def __init__(self, max_time=480):
+    def __init__(self, max_time=480, verbose=True):
         """
         Inicializa la simulación con la duración de la jornada laboral.
 
         Args:
             max_time (float): Duración máxima en minutos. Default 480 (8 horas).
+            verbose (bool): Si True, muestra los eventos en consola. Default True.
         """
         self.max_time = max_time
+        self.verbose = verbose
         self.time = 0
         self.closed = False
         self.events = []
@@ -73,6 +75,11 @@ class Simulation:
         self.clients_type3 = 0
         self.clients_type4 = 0
         self.clients_in_system = 0
+
+    def log(self, *args, **kwargs) -> None:
+        """Imprime mensajes solo si verbose=True."""
+        if self.verbose:
+            print(*args, **kwargs)
     
     def save_event(self, event: Event) -> None:
         """
@@ -127,12 +134,12 @@ class Simulation:
                 sellers_occupied = self.server.total_sellers - self.server.free_sellers
                 technicians_occupied = self.server.total_technicians - self.server.free_technicians
                 special_occupied = self.server.total_special_technicians - self.server.free_special_technicians
-                print(f"\n========== minuto {self.max_time:.2f}: Hora de cierre del taller. Atendiendo clientes restantes ==========")
-                print(f"Clientes en el sistema: {self.clients_in_system}")
-                print(f"Atendiendo: {sellers_occupied}/{self.server.total_sellers} vendedores | {technicians_occupied}/{self.server.total_technicians} técnicos | {special_occupied}/{self.server.total_special_technicians} especializado(s)")
-                print(f"En cola: {len(self.sellers_queue)} vendedores | {len(self.technicians_queue)} técnicos | {len(self.special_technicians_queue)} especializado(s)")
+                self.log(f"\n========== minuto {self.max_time:.2f}: Hora de cierre del taller. Atendiendo clientes restantes ==========")
+                self.log(f"Clientes en el sistema: {self.clients_in_system}")
+                self.log(f"Atendiendo: {sellers_occupied}/{self.server.total_sellers} vendedores | {technicians_occupied}/{self.server.total_technicians} técnicos | {special_occupied}/{self.server.total_special_technicians} especializado(s)")
+                self.log(f"En cola: {len(self.sellers_queue)} vendedores | {len(self.technicians_queue)} técnicos | {len(self.special_technicians_queue)} especializado(s)")
             
-            print(f"\n========== minuto {self.time:.2f} ==========")
+            self.log(f"\n========== minuto {self.time:.2f} ==========")
             
             if actual_event.type == "arrival":
                 self.process_arrival(actual_event)
@@ -147,9 +154,9 @@ class Simulation:
             technicians_occupied = self.server.total_technicians - self.server.free_technicians
             special_occupied = self.server.total_special_technicians - self.server.free_special_technicians
             
-            print(f"Clientes en el sistema: {self.clients_in_system}")
-            print(f"Atendiendo: {sellers_occupied}/{self.server.total_sellers} vendedores | {technicians_occupied}/{self.server.total_technicians} técnicos | {special_occupied}/{self.server.total_special_technicians} especializado(s)")
-            print(f"En cola: {len(self.sellers_queue)} vendedores | {len(self.technicians_queue)} técnicos | {len(self.special_technicians_queue)} especializado(s)")
+            self.log(f"Clientes en el sistema: {self.clients_in_system}")
+            self.log(f"Atendiendo: {sellers_occupied}/{self.server.total_sellers} vendedores | {technicians_occupied}/{self.server.total_technicians} técnicos | {special_occupied}/{self.server.total_special_technicians} especializado(s)")
+            self.log(f"En cola: {len(self.sellers_queue)} vendedores | {len(self.technicians_queue)} técnicos | {len(self.special_technicians_queue)} especializado(s)")
         
 
         self.show_results()
@@ -182,7 +189,7 @@ class Simulation:
         
         next_time = self.time + arrival_time()
         
-        print(f"minuto {self.time:.2f}: Llegó el cliente {client.id} y quiere un servicio de tipo {client.service_type}")
+        self.log(f"minuto {self.time:.2f}: Llegó el cliente {client.id} y quiere un servicio de tipo {client.service_type}")
         if next_time < self.max_time:
             new_client = Client(
                 self.generated_clients + 1,
@@ -196,7 +203,7 @@ class Simulation:
 
         if self.server.free_sellers > 0:
             self.server.free_sellers -= 1
-            print(f"minuto {self.time:.2f}: El cliente {client.id} está siendo atendido por un vendedor")
+            self.log(f"minuto {self.time:.2f}: El cliente {client.id} está siendo atendido por un vendedor")
             time_of_work = seller_service_time()
             end = self.time + time_of_work
 
@@ -205,7 +212,7 @@ class Simulation:
             )
         else:
             self.sellers_queue.append(client)
-            print(f"minuto {self.time:.2f}: El cliente {client.id} se colocou en la cola de los vendedores ya que no había ninguno disponible")
+            self.log(f"minuto {self.time:.2f}: El cliente {client.id} se colocou en la cola de los vendedores ya que no había ninguno disponible")
     
     def seller_end(self, event: Event) -> None:
         """
@@ -223,7 +230,7 @@ class Simulation:
         """
         client: Client = event.client
         self.server.free_sellers += 1
-        print(f"minuto {self.time:.2f}: El cliente {client.id} terminó de ser atendido por el vendedor")
+        self.log(f"minuto {self.time:.2f}: El cliente {client.id} terminó de ser atendido por el vendedor")
         if self.sellers_queue:
             next_client: Client = self.sellers_queue.popleft()
             self.server.free_sellers -= 1
@@ -235,17 +242,17 @@ class Simulation:
             )
         
         if client.service_type in [1, 2]:
-            print(f"minuto {self.time:.2f}: El cliente {client.id} fue enviado al servicio de reparación")
+            self.log(f"minuto {self.time:.2f}: El cliente {client.id} fue enviado al servicio de reparación")
             self.send_to_repair(client)
         elif client.service_type == 3:
-            print(f"minuto {self.time:.2f}: El cliente {client.id} fue enviado al servicio de cambio de equipo")
+            self.log(f"minuto {self.time:.2f}: El cliente {client.id} fue enviado al servicio de cambio de equipo")
             self.send_to_change_equipment(client)
         else:
-            print(f"minuto {self.time:.2f}: Al cliente {client.id} le vendieron un equipo")
+            self.log(f"minuto {self.time:.2f}: Al cliente {client.id} le vendieron un equipo")
             self.total_amount += 750
             self.attended_clients += 1
             self.clients_in_system -= 1
-            print(f"minuto {self.time:.2f}: Ganancia generada hasta el momento: ${self.total_amount}")
+            self.log(f"minuto {self.time:.2f}: Ganancia generada hasta el momento: ${self.total_amount}")
     
     def send_to_repair(self, client: Client) -> None:
         """
@@ -261,7 +268,7 @@ class Simulation:
             client (Client): Cliente que requiere reparación.
         """
         if self.server.free_technicians > 0:
-            print(f"minuto {self.time:.2f}: El cliente {client.id} está siendo atendido por un técnico")
+            self.log(f"minuto {self.time:.2f}: El cliente {client.id} está siendo atendido por un técnico")
             self.server.free_technicians -= 1
             time_of_work = repair_time()
             end = self.time + time_of_work
@@ -272,7 +279,7 @@ class Simulation:
             self.server.free_special_technicians > 0 
             and len(self.special_technicians_queue) == 0
         ):
-            print(f"minuto {self.time:.2f}: El cliente {client.id} está siendo atendido por un técnico especializado")
+            self.log(f"minuto {self.time:.2f}: El cliente {client.id} está siendo atendido por un técnico especializado")
             self.server.free_special_technicians -= 1
             time_of_work = repair_time()
             end = self.time + time_of_work
@@ -280,7 +287,7 @@ class Simulation:
                 Event(end, "special_technichian_end", client)
             )
         else:
-            print(f"minuto {self.time:.2f}: El cliente {client.id} se colocou en la cola de los técnicos ya que no había ninguno disponible")
+            self.log(f"minuto {self.time:.2f}: El cliente {client.id} se colocou en la cola de los técnicos ya que no había ninguno disponible")
             self.technicians_queue.append(client)
     
     def send_to_change_equipment(self, client: Client) -> None:
@@ -295,7 +302,7 @@ class Simulation:
             client (Client): Cliente que requiere cambio de equipo.
         """
         if self.server.free_special_technicians > 0:
-            print(f"minuto {self.time:.2f}: El cliente {client.id} está siendo atendido por un técnico especializado")
+            self.log(f"minuto {self.time:.2f}: El cliente {client.id} está siendo atendido por un técnico especializado")
             self.server.free_special_technicians -= 1
             time_of_work = equipment_change_time()
             end = self.time + time_of_work
@@ -303,7 +310,7 @@ class Simulation:
                 Event(end, "special_technichian_end", client)
             )
         else:
-            print(f"minuto {self.time:.2f}: El cliente {client.id} se放在了cola de los técnicos especializados ya que no había ninguno disponible")
+            self.log(f"minuto {self.time:.2f}: El cliente {client.id} se放在了cola de los técnicos especializados ya que no había ninguno disponible")
             self.special_technicians_queue.append(client)
     
     def technichian_end(self, event: Event) -> None:
@@ -319,22 +326,22 @@ class Simulation:
             event (Event): Evento de fin de reparación.
         """
         client: Client = event.client
-        print(f"minuto {self.time:.2f}: El cliente {client.id} terminó de ser atendido por el técnico")
+        self.log(f"minuto {self.time:.2f}: El cliente {client.id} terminó de ser atendido por el técnico")
         self.server.free_technicians += 1
 
         if client.service_type == 2:
             self.total_amount += 350
-            print(f"minuto {self.time:.2f}: Al cliente {client.id} el técnico le reparó un equipo sin garantía")
-            print(f"minuto {self.time:.2f}: Ganancia generada hasta el momento: ${self.total_amount}")
+            self.log(f"minuto {self.time:.2f}: Al cliente {client.id} el técnico le reparó un equipo sin garantía")
+            self.log(f"minuto {self.time:.2f}: Ganancia generada hasta el momento: ${self.total_amount}")
         else:
-            print(f"minuto {self.time:.2f}: Al cliente {client.id} el técnico le reparó un equipo con garantía")
+            self.log(f"minuto {self.time:.2f}: Al cliente {client.id} el técnico le reparó un equipo con garantía")
         
         self.attended_clients += 1
         self.clients_in_system -= 1
 
         if self.technicians_queue:
             next_client: Client = self.technicians_queue.popleft()
-            print(f"minuto {self.time:.2f}: El cliente {next_client.id} sale de la cola para ser atendido por el técnico")
+            self.log(f"minuto {self.time:.2f}: El cliente {next_client.id} sale de la cola para ser atendido por el técnico")
             self.server.free_technicians -= 1
             time_of_work = repair_time()
             end = self.time + time_of_work
@@ -359,16 +366,16 @@ class Simulation:
         """
         client: Client = event.client
         self.server.free_special_technicians += 1
-        print(f"minuto {self.time:.2f}: El cliente {client.id} terminó de ser atendido por el técnico especializado")
+        self.log(f"minuto {self.time:.2f}: El cliente {client.id} terminó de ser atendido por el técnico especializado")
         
         if client.service_type == 3:
             self.total_amount += 500
-            print(f"minuto {self.time:.2f}: Al cliente {client.id} el técnico especializado le realizó un cambio de equipo")
-            print(f"minuto {self.time:.2f}: Ganancia generada hasta el momento: ${self.total_amount:.2f}")
+            self.log(f"minuto {self.time:.2f}: Al cliente {client.id} el técnico especializado le realizó un cambio de equipo")
+            self.log(f"minuto {self.time:.2f}: Ganancia generada hasta el momento: ${self.total_amount:.2f}")
         elif client.service_type == 2:
             self.total_amount += 350
-            print(f"minuto {self.time:.2f}: Al cliente {client.id} el técnico especializado le reparó un equipo sin garantía")
-            print(f"minuto {self.time:.2f}: Ganancia generada hasta el momento: ${self.total_amount:.2f}")
+            self.log(f"minuto {self.time:.2f}: Al cliente {client.id} el técnico especializado le reparó un equipo sin garantía")
+            self.log(f"minuto {self.time:.2f}: Ganancia generada hasta el momento: ${self.total_amount:.2f}")
 
         
         self.attended_clients += 1
@@ -376,7 +383,7 @@ class Simulation:
 
         if self.special_technicians_queue:
             next_client: Client = self.special_technicians_queue.popleft()
-            print(f"minuto {self.time:.2f}: El cliente {next_client.id} sale de la cola de cambios de equipo para ser atendido por el técnico especializado")
+            self.log(f"minuto {self.time:.2f}: El cliente {next_client.id} sale de la cola de cambios de equipo para ser atendido por el técnico especializado")
             self.server.free_special_technicians -= 1
             time_of_work = equipment_change_time()
             end = self.time + time_of_work
@@ -385,7 +392,7 @@ class Simulation:
             )
         elif self.technicians_queue:
             next_client: Client = self.technicians_queue.popleft()
-            print(f"minuto {self.time:.2f}: El cliente {next_client.id} sale de la cola de reparaciones para ser atendido por el técnico especializado")
+            self.log(f"minuto {self.time:.2f}: El cliente {next_client.id} sale de la cola de reparaciones para ser atendido por el técnico especializado")
             self.server.free_special_technicians -= 1
             time_of_work = repair_time()
             end = self.time + time_of_work
