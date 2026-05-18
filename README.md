@@ -1,24 +1,29 @@
-# Centro de Servicio Técnico - Simulación de Eventos Discretos
+# Happy Computing - Simulación de Eventos Discretos
 
-Simulación de un centro de servicio técnico de equipos de cómputo usando el método de eventos discretos.
+Simulación de un taller de reparaciones electrónicas usando el método de eventos discretos con 10,000 réplicas Monte Carlo.
 
 ## Descripción
 
-El taller cuenta con:
-- **2 vendedores** que atienden a los clientes y venden equipos
-- **3 técnicos** que realizan reparaciones
-- **1 técnico especializado** que realiza cambios de equipo y también puede hacer reparaciones
+El taller "Happy Computing" cuenta con empleados que ofrecen servicios de reparación, cambio y venta de equipos electrónicos. El modelo simula el flujo de clientes, tiempos de espera y ganancias diarias.
+
+### Recursos del Sistema
+
+| Recurso | Cantidad | Función |
+|---------|----------|---------|
+| Vendedores | 2 | Atención inicial y ventas |
+| Técnicos | 3 | Reparaciones |
+| Técnico Especializado | 1 | Cambios de equipo y reparaciones |
 
 ### Tipos de Servicio
 
 | Tipo | Descripción | Ganancia |
 |------|-------------|----------|
-| 1 | Venta + Reparación con garantía | $0 |
-| 2 | Venta + Reparación sin garantía | $350 |
-| 3 | Venta + Cambio de equipo | $500 |
-| 4 | Solo venta de equipo | $750 |
+| 1 | Reparación con garantía | $0 |
+| 2 | Reparación sin garantía | $350 |
+| 3 | Cambio de equipo | $500 |
+| 4 | Venta de equipo | $750 |
 
-### Distribución de llegada de clientes
+### Distribución de Llegada de Clientes
 
 | Tipo | Probabilidad |
 |------|-------------|
@@ -30,40 +35,52 @@ El taller cuenta con:
 ## Estructura del Proyecto
 
 ```
-├── main.py              # Punto de entrada de la simulación
-├── simulation.py        # Motor principal de eventos discretos
-├── client.py            # Modelo de cliente
-├── event.py             # Modelo de evento
-├── server.py            # Modelo de servidores
-├── random_variables.py  # Generadores de variables aleatorias
-└── random_variables_test.py # Pruebas unitarias
+├── main.py                    # Menú interactivo
+├── simulation.py              # Motor de simulación de eventos discretos
+├── experiment.py             # Experimentos (10,000 simulaciones)
+├── client.py                 # Entidad cliente
+├── event.py                  # Entidad evento
+├── server.py                 # Recursos humanos
+├── random_variables.py       # Generadores de variables aleatorias
+├── docs/                   # Informe
+└── results/                  # Resultados de experimentos
 ```
-
-### Archivos principales
-
-- **main.py**: Crea y ejecuta la simulación con un tiempo máximo de 480 minutos (8 horas).
-
-- **simulation.py**: Contiene la clase `Simulation` que gestiona la cola de eventos, procesa llegadas y salidas, y lleva control de colas de espera.
-
-- **client.py**: Define la estructura de un cliente con su ID, tiempo de llegada y tipo de servicio.
-
-- **event.py**: Representa los eventos de la simulación (llegada, fin de venta, fin de reparación, etc.).
-
-- **server.py**: Controla la disponibilidad de vendedores y técnicos.
-
-- **random_variables.py**: Implementa generadores de variables aleatorias usando métodos como inversa y Box-Muller.
 
 ## Requisitos
 
 - Python 3.12+
+- numpy (para cálculo de estadísticas y percentiles)
+
+## Instalación
+
+```bash
+pip install -r requirements.txt
+```
 
 ## Cómo ejecutar
+
+### Menú interactivo
 
 ```bash
 python main.py
 ```
 
-La simulación mostrará en consola:
-- Cada evento que ocurre con su minuto correspondiente
-- Estado del sistema (clientes en cola, servidores ocupados)
-- Resultados finales al terminar
+Opciones disponibles:
+1. Ejecutar simulación con eventos detallados
+2. Ejecutar simulación (solo resultados)
+3. Ejecutar experimentos (múltiples simulaciones)
+
+### Ejecutar experimentos directamente
+
+```bash
+python experiment.py
+```
+
+Ejecuta 10,000 simulaciones y genera:
+- `results/experiments_results.csv` - Datos crudos de cada simulación
+- `results/experiments_summary.txt` - Resumen con estadísticas
+
+
+## Repositorio
+
+https://github.com/Dylan2108/Happy-Computing
