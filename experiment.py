@@ -11,6 +11,7 @@ Uso:
 
 import random
 import statistics
+import numpy as np
 from collections import defaultdict
 from typing import List, Dict
 
@@ -46,20 +47,19 @@ class ExperimentResults:
         Returns:
             Diccionario con media, std, min, max, percentiles, IQR, IC 95%.
         """
-        values = self.get_metric(metric)
-        if not values:
+        values = np.array(self.get_metric(metric))
+        if len(values) == 0:
             return {}
 
         n = len(values)
-        sorted_vals = sorted(values)
-        mean = statistics.mean(values)
-        std = statistics.stdev(values) if n > 1 else 0
-        min_val = min(values)
-        max_val = max(values)
+        mean = np.mean(values)
+        std = np.std(values, ddof=1) if n > 1 else 0
+        min_val = np.min(values)
+        max_val = np.max(values)
 
-        p25 = sorted_vals[int(n * 0.25)] if n > 0 else 0
-        p50 = sorted_vals[int(n * 0.50)] if n > 0 else 0
-        p75 = sorted_vals[int(n * 0.75)] if n > 0 else 0
+        p25 = np.percentile(values, 25)
+        p50 = np.percentile(values, 50)
+        p75 = np.percentile(values, 75)
         iqr = p75 - p25
 
         margin = 1.96 * (std / (n ** 0.5)) if n > 1 else 0
@@ -397,7 +397,7 @@ def run_single_simulation(
 
 
 def run_experiments(
-    num_simulations: int = 1000,
+    num_simulations: int = 10000,
     max_time: int = 480,
     sellers: int = 2,
     technicians: int = 3,
@@ -444,9 +444,12 @@ def run_experiments(
 
 def main():
     """Función principal del experimento."""
-    # Ejecutar 1000 simulaciones con la configuración base
+    import os
+    
+    os.makedirs("results", exist_ok=True)
+    
     results = run_experiments(
-        num_simulations=1000,
+        num_simulations=10000,
         max_time=480,
         sellers=2,
         technicians=3,
@@ -454,15 +457,11 @@ def main():
         verbose=True
     )
 
-    # Mostrar estadísticas
     results.print_summary()
-
-    # Mostrar conclusiones
     results.print_conclusions()
 
-    # Guardar resultados
-    results.save_to_csv("experiments_results.csv")
-    results.save_summary("experiments_summary.txt")
+    results.save_to_csv("results/experiments_results.csv")
+    results.save_summary("results/experiments_summary.txt")
 
 
 if __name__ == "__main__":

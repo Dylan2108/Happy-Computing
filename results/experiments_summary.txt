@@ -7,91 +7,91 @@ Número de simulaciones: 10000
 
 Ganancia total ($):
   Media: 6406.15
-  Desviación estándar: 1418.56
-  Mín: 1600.00 | Máx: 12000.00
-  Percentiles: P25=5400.00 | P50=6400.00 | P75=7350.00
-  Rango intercuartílico (IQR): 1950.00
-  IC 95%: [6378.35, 6433.96]
+  Desviación estándar: 1416.88
+  Mín: 1400.00 | Máx: 12550.00
+  Percentiles: P25=5450.00 | P50=6400.00 | P75=7350.00
+  Rango intercuartílico (IQR): 1900.00
+  IC 95%: [6378.37, 6433.92]
 
 Clientes generados:
-  Media: 22.35
+  Media: 22.34
   Desviación estándar: 1.06
   Mín: 19.00 | Máx: 26.00
   Percentiles: P25=22.00 | P50=22.00 | P75=23.00
   Rango intercuartílico (IQR): 1.00
-  IC 95%: [22.33, 22.37]
+  IC 95%: [22.32, 22.36]
 
 Clientes atendidos:
-  Media: 22.35
+  Media: 22.34
   Desviación estándar: 1.06
   Mín: 19.00 | Máx: 26.00
   Percentiles: P25=22.00 | P50=22.00 | P75=23.00
   Rango intercuartílico (IQR): 1.00
-  IC 95%: [22.33, 22.37]
+  IC 95%: [22.32, 22.36]
 
 Tipo 1 (Garantía):
-  Media: 10.10
-  Desviación estándar: 2.40
-  Mín: 2.00 | Máx: 19.00
+  Media: 10.06
+  Desviación estándar: 2.39
+  Mín: 1.00 | Máx: 19.00
   Percentiles: P25=8.00 | P50=10.00 | P75=12.00
   Rango intercuartílico (IQR): 4.00
-  IC 95%: [10.05, 10.14]
+  IC 95%: [10.02, 10.11]
 
 Tipo 2 (Sin garantía):
-  Media: 5.56
-  Desviación estándar: 2.07
-  Mín: 0.00 | Máx: 17.00
-  Percentiles: P25=4.00 | P50=5.00 | P75=7.00
+  Media: 5.61
+  Desviación estándar: 2.05
+  Mín: 0.00 | Máx: 13.00
+  Percentiles: P25=4.00 | P50=6.00 | P75=7.00
   Rango intercuartílico (IQR): 3.00
-  IC 95%: [5.52, 5.60]
+  IC 95%: [5.57, 5.65]
 
 Tipo 3 (Cambio equipo):
-  Media: 2.25
-  Desviación estándar: 1.40
+  Media: 2.22
+  Desviación estándar: 1.39
   Mín: 0.00 | Máx: 9.00
   Percentiles: P25=1.00 | P50=2.00 | P75=3.00
   Rango intercuartílico (IQR): 2.00
-  IC 95%: [2.22, 2.27]
+  IC 95%: [2.19, 2.25]
 
 Tipo 4 (Venta equipo):
-  Media: 4.45
-  Desviación estándar: 1.89
-  Mín: 0.00 | Máx: 12.00
+  Media: 4.44
+  Desviación estándar: 1.90
+  Mín: 0.00 | Máx: 14.00
   Percentiles: P25=3.00 | P50=4.00 | P75=6.00
   Rango intercuartílico (IQR): 3.00
   IC 95%: [4.41, 4.48]
 
 Tiempo final (min):
-  Media: 493.74
-  Desviación estándar: 22.39
-  Mín: 449.46 | Máx: 699.76
-  Percentiles: P25=478.58 | P50=488.61 | P75=503.99
-  Rango intercuartílico (IQR): 25.41
-  IC 95%: [493.30, 494.18]
+  Media: 493.54
+  Desviación estándar: 22.08
+  Mín: 448.61 | Máx: 660.88
+  Percentiles: P25=478.52 | P50=488.40 | P75=503.64
+  Rango intercuartílico (IQR): 25.12
+  IC 95%: [493.11, 493.97]
 
 
 --- DISTRIBUCIÓN DE SERVICIOS (Promedio) ---
-Tipo 1: 10.1 clientes (45.2%)
-Tipo 2: 5.6 clientes (24.9%)
-Tipo 3: 2.2 clientes (10.1%)
+Tipo 1: 10.1 clientes (45.1%)
+Tipo 2: 5.6 clientes (25.1%)
+Tipo 3: 2.2 clientes (9.9%)
 Tipo 4: 4.4 clientes (19.9%)
 
 --- TIEMPOS DE ESPERA ---
 Tiempo en sistema (min):
-  Media: 20.55
-  Percentiles: P25=17.65 | P50=20.22 | P75=23.13
-  IQR: 5.48
+  Media: 20.50
+  Percentiles: P25=17.68 | P50=20.22 | P75=23.04
+  IQR: 5.37
 
 
 --- UTILIZACIÓN DE SERVIDORES (%) ---
-Vendedores: 11.7% (IC 95%: [11.6, 11.7])
-Técnicos: 21.7% (IC 95%: [21.6, 21.8])
-Técnicos especializados: 7.1% (IC 95%: [6.9, 7.2])
+Vendedores: 11.6% (IC 95%: [11.6, 11.6])
+Técnicos: 21.7% (IC 95%: [21.5, 21.8])
+Técnicos especializados: 7.0% (IC 95%: [6.8, 7.1])
 
 --- PORCENTAJE DE OCIOSIDAD (%) ---
-Vendedores: 88.3%
+Vendedores: 88.4%
 Técnicos: 78.3%
-Técnicos especializados: 92.9%
+Técnicos especializados: 93.0%
 
 ======================================================================
 CONCLUSIONES
@@ -99,23 +99,23 @@ CONCLUSIONES
 
 1. GANANCIA ESPERADA:
    - La ganancia media por jornada de 8 horas es de $6406.15
-   - Con un intervalo de confianza del 95%: [6378.35, 6433.96]
-   - La variabilidad (desviación estándar) es de $1418.56
+   - Con un intervalo de confianza del 95%: [6378.37, 6433.92]
+   - La variabilidad (desviación estándar) es de $1416.88
 
 2. CAPACIDAD DEL SISTEMA:
-   - En promedio llegan 22.4 clientes por jornada
-   - El sistema atiende aproximadamente 22.4 clientes
+   - En promedio llegan 22.3 clientes por jornada
+   - El sistema atiende aproximadamente 22.3 clientes
    - Algunos clientes quedan sin atender al cierre: 0.0 en promedio
 
 3. TIEMPOS DE ESPERA:
    - Cola vendedores: 0.00 min promedio
    - Cola técnicos: 0.00 min promedio
-   - Tiempo promedio en sistema: 20.55 min (P50=20.22, IQR=5.48)
+   - Tiempo promedio en sistema: 20.50 min (P50=20.22, IQR=5.37)
 
 4. UTILIZACIÓN DE RECURSOS Y OCISIDAD:
-   - Vendedores: 11.7% utilizado - Ociosidad: 88.3%
+   - Vendedores: 11.6% utilizado - Ociosidad: 88.4%
    - Técnicos: 21.7% utilizado - Ociosidad: 78.3%
-   - Técnicos especializados: 7.1% utilizado - Ociosidad: 92.9%
+   - Técnicos especializados: 7.0% utilizado - Ociosidad: 93.0%
 
 5. TIPO DE SERVICIOS MÁS FRECUENTES:
    - Tipo 1 (Garantía): 10.1 clientes

@@ -35,9 +35,9 @@ def run_experiments_menu() -> None:
     print("=" * 60)
 
     # Número de simulaciones
-    print("\n1. Número de simulaciones (default: 1000)")
+    print("\n1. Número de simulaciones (default: 10000)")
     num_input = input("   Presione Enter para usar default: ")
-    num_simulations = int(num_input) if num_input.strip() else 1000
+    num_simulations = int(num_input) if num_input.strip() else 10000
 
     # Duración de la jornada
     print("\n2. Duración de la jornada en minutos (default: 480)")
@@ -84,8 +84,10 @@ def run_experiments_menu() -> None:
 
     save = input("\n¿Guardar resultados? (s/n): ")
     if save.lower() == 's':
-        results.save_to_csv("experiments_results.csv")
-        results.save_summary("experiments_summary.txt")
+        import os
+        os.makedirs("results", exist_ok=True)
+        results.save_to_csv("results/experiments_results.csv")
+        results.save_summary("results/experiments_summary.txt")
 
 
 def print_menu() -> None:
