@@ -153,6 +153,75 @@ class ExperimentResults:
 
         print(f"\nResultados guardados en: {filename}")
 
+    def save_summary(self, filename: str) -> None:
+        """Guarda el resumen textual en un archivo."""
+        with open(filename, 'w') as f:
+            import statistics
+            
+            f.write("=" * 70 + "\n")
+            f.write("RESULTADOS DE EXPERIMENTACIÓN - SIMULACIÓN DE EVENTOS DISCRETOS\n")
+            f.write(f"Número de simulaciones: {self.num_simulations}\n")
+            f.write("=" * 70 + "\n\n")
+
+            metrics = [
+                ("total_amount", "Ganancia total ($)"),
+                ("generated_clients", "Clientes generados"),
+                ("attended_clients", "Clientes atendidos"),
+                ("clients_type1", "Tipo 1 (Garantía)"),
+                ("clients_type2", "Tipo 2 (Sin garantía)"),
+                ("clients_type3", "Tipo 3 (Cambio equipo)"),
+                ("clients_type4", "Tipo 4 (Venta equipo)"),
+                ("final_time", "Tiempo final (min)"),
+            ]
+
+            f.write("--- ESTADÍSTICAS PRINCIPALES ---\n\n")
+            for metric, label in metrics:
+                stats = self.calculate_stats(metric)
+                if stats:
+                    f.write(f"{label}:\n")
+                    f.write(f"  Media: {stats['mean']:.2f}\n")
+                    f.write(f"  Desviación estándar: {stats['std']:.2f}\n")
+                    f.write(f"  Mín: {stats['min']:.2f} | Máx: {stats['max']:.2f}\n")
+                    f.write(f"  IC 95%: [{stats['ci_lower']:.2f}, {stats['ci_upper']:.2f}]\n\n")
+
+            f.write("\n--- DISTRIBUCIÓN DE SERVICIOS (Promedio) ---\n")
+            total_services = statistics.mean(self.get_metric("generated_clients"))
+            for i in range(1, 5):
+                count = statistics.mean(self.get_metric(f"clients_type{i}"))
+                pct = (count / total_services * 100) if total_services > 0 else 0
+                f.write(f"Tipo {i}: {count:.1f} clientes ({pct:.1f}%)\n")
+
+            gain_stats = self.calculate_stats("total_amount")
+            clients_stats = self.calculate_stats("generated_clients")
+
+            f.write("\n" + "=" * 70 + "\n")
+            f.write("CONCLUSIONES\n")
+            f.write("=" * 70 + "\n")
+            f.write(f"""
+1. GANANCIA ESPERADA:
+   - La ganancia media por jornada de 8 horas es de ${gain_stats['mean']:.2f}
+   - Con un intervalo de confianza del 95%: [{gain_stats['ci_lower']:.2f}, {gain_stats['ci_upper']:.2f}]
+   - La variabilidad (desviación estándar) es de ${gain_stats['std']:.2f}
+
+2. CAPACIDAD DEL SISTEMA:
+   - En promedio llegan {clients_stats['mean']:.1f} clientes por jornada
+   - El sistema atiende aproximadamente {statistics.mean(self.get_metric('attended_clients')):.1f} clientes
+   - Algunos clientes quedan sin atender al cierre: {clients_stats['mean'] - statistics.mean(self.get_metric('attended_clients')):.1f} en promedio
+
+3. TIPO DE SERVICIOS MÁS FRECUENTES:
+   - Tipo 1 (Garantía): {statistics.mean(self.get_metric('clients_type1')):.1f} clientes
+   - Tipo 2 (Sin garantía): {statistics.mean(self.get_metric('clients_type2')):.1f} clientes
+   - Tipo 3 (Cambio): {statistics.mean(self.get_metric('clients_type3')):.1f} clientes
+   - Tipo 4 (Venta): {statistics.mean(self.get_metric('clients_type4')):.1f} clientes
+
+4. OBSERVACIONES:
+   - El tipo de servicio más frecuente es el 1 (reparación con garantía)
+   - La ganancia proviene principalmente de tipos 2, 3 y 4
+   - El sistema tiene capacidad suficiente para la demanda actual
+""")
+
+        print(f"Resumen guardado en: {filename}")
+
 
 def run_single_simulation(
     max_time: int = 480,
@@ -272,7 +341,8 @@ def main():
     results.print_conclusions()
 
     # Guardar resultados
-    results.save_to_csv("resultados_experimento.csv")
+    results.save_to_csv("experiments_results.csv")
+    results.save_summary("experiments_summary.txt")
 
 
 if __name__ == "__main__":

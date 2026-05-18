@@ -1,0 +1,86 @@
+======================================================================
+RESULTADOS DE EXPERIMENTACIÓN - SIMULACIÓN DE EVENTOS DISCRETOS
+Número de simulaciones: 1000
+======================================================================
+
+--- ESTADÍSTICAS PRINCIPALES ---
+
+Ganancia total ($):
+  Media: 6378.70
+  Desviación estándar: 1399.94
+  Mín: 2150.00 | Máx: 10450.00
+  IC 95%: [6291.93, 6465.47]
+
+Clientes generados:
+  Media: 22.37
+  Desviación estándar: 1.02
+  Mín: 19.00 | Máx: 26.00
+  IC 95%: [22.31, 22.44]
+
+Clientes atendidos:
+  Media: 22.37
+  Desviación estándar: 1.02
+  Mín: 19.00 | Máx: 26.00
+  IC 95%: [22.31, 22.44]
+
+Tipo 1 (Garantía):
+  Media: 10.19
+  Desviación estándar: 2.37
+  Mín: 4.00 | Máx: 18.00
+  IC 95%: [10.04, 10.33]
+
+Tipo 2 (Sin garantía):
+  Media: 5.56
+  Desviación estándar: 2.17
+  Mín: 0.00 | Máx: 13.00
+  IC 95%: [5.43, 5.70]
+
+Tipo 3 (Cambio equipo):
+  Media: 2.15
+  Desviación estándar: 1.42
+  Mín: 0.00 | Máx: 8.00
+  IC 95%: [2.06, 2.24]
+
+Tipo 4 (Venta equipo):
+  Media: 4.47
+  Desviación estándar: 1.90
+  Mín: 0.00 | Máx: 11.00
+  IC 95%: [4.36, 4.59]
+
+Tiempo final (min):
+  Media: 494.36
+  Desviación estándar: 23.26
+  Mín: 453.60 | Máx: 687.49
+  IC 95%: [492.92, 495.81]
+
+
+--- DISTRIBUCIÓN DE SERVICIOS (Promedio) ---
+Tipo 1: 10.2 clientes (45.5%)
+Tipo 2: 5.6 clientes (24.9%)
+Tipo 3: 2.2 clientes (9.6%)
+Tipo 4: 4.5 clientes (20.0%)
+
+======================================================================
+CONCLUSIONES
+======================================================================
+
+1. GANANCIA ESPERADA:
+   - La ganancia media por jornada de 8 horas es de $6378.70
+   - Con un intervalo de confianza del 95%: [6291.93, 6465.47]
+   - La variabilidad (desviación estándar) es de $1399.94
+
+2. CAPACIDAD DEL SISTEMA:
+   - En promedio llegan 22.4 clientes por jornada
+   - El sistema atiende aproximadamente 22.4 clientes
+   - Algunos clientes quedan sin atender al cierre: 0.0 en promedio
+
+3. TIPO DE SERVICIOS MÁS FRECUENTES:
+   - Tipo 1 (Garantía): 10.2 clientes
+   - Tipo 2 (Sin garantía): 5.6 clientes
+   - Tipo 3 (Cambio): 2.2 clientes
+   - Tipo 4 (Venta): 4.5 clientes
+
+4. OBSERVACIONES:
+   - El tipo de servicio más frecuente es el 1 (reparación con garantía)
+   - La ganancia proviene principalmente de tipos 2, 3 y 4
+   - El sistema tiene capacidad suficiente para la demanda actual

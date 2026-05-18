@@ -82,9 +82,10 @@ def run_experiments_menu() -> None:
     results.print_summary()
     results.print_conclusions()
 
-    save = input("\n¿Guardar resultados en CSV? (s/n): ")
+    save = input("\n¿Guardar resultados? (s/n): ")
     if save.lower() == 's':
         results.save_to_csv("experiments_results.csv")
+        results.save_summary("experiments_summary.txt")
 
 
 def print_menu() -> None:
