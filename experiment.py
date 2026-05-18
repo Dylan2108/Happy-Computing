@@ -44,19 +44,24 @@ class ExperimentResults:
         Calcula estadísticas para una métrica.
 
         Returns:
-            Diccionario con media, std, min, max, IC 95%.
+            Diccionario con media, std, min, max, percentiles, IQR, IC 95%.
         """
         values = self.get_metric(metric)
         if not values:
             return {}
 
         n = len(values)
+        sorted_vals = sorted(values)
         mean = statistics.mean(values)
         std = statistics.stdev(values) if n > 1 else 0
         min_val = min(values)
         max_val = max(values)
 
-        # Intervalo de confianza 95%: mean ± 1.96 * (std / sqrt(n))
+        p25 = sorted_vals[int(n * 0.25)] if n > 0 else 0
+        p50 = sorted_vals[int(n * 0.50)] if n > 0 else 0
+        p75 = sorted_vals[int(n * 0.75)] if n > 0 else 0
+        iqr = p75 - p25
+
         margin = 1.96 * (std / (n ** 0.5)) if n > 1 else 0
 
         return {
@@ -64,6 +69,10 @@ class ExperimentResults:
             "std": std,
             "min": min_val,
             "max": max_val,
+            "p25": p25,
+            "p50": p50,
+            "p75": p75,
+            "iqr": iqr,
             "ci_lower": mean - margin,
             "ci_upper": mean + margin,
             "n": n
@@ -95,6 +104,8 @@ class ExperimentResults:
                 print(f"  Media: {stats['mean']:.2f}")
                 print(f"  Desviación estándar: {stats['std']:.2f}")
                 print(f"  Mín: {stats['min']:.2f} | Máx: {stats['max']:.2f}")
+                print(f"  Percentiles: P25={stats['p25']:.2f} | P50={stats['p50']:.2f} | P75={stats['p75']:.2f}")
+                print(f"  Rango intercuartílico (IQR): {stats['iqr']:.2f}")
                 print(f"  IC 95%: [{stats['ci_lower']:.2f}, {stats['ci_upper']:.2f}]")
                 print()
 
@@ -106,10 +117,54 @@ class ExperimentResults:
             pct = (count / total_services * 100) if total_services > 0 else 0
             print(f"Tipo {i}: {count:.1f} clientes ({pct:.1f}%)")
 
+        print("\n--- TIEMPOS DE ESPERA ---")
+        wait_metrics = [
+            ("avg_wait_seller", "Cola vendedores (min)"),
+            ("avg_wait_technician", "Cola técnicos (min)"),
+            ("avg_wait_special", "Cola técnicos especiales (min)"),
+            ("avg_time_in_system", "Tiempo en sistema (min)"),
+        ]
+        for metric, label in wait_metrics:
+            stats = self.calculate_stats(metric)
+            if stats and stats['mean'] > 0:
+                print(f"{label}:")
+                print(f"  Media: {stats['mean']:.2f}")
+                print(f"  Percentiles: P25={stats['p25']:.2f} | P50={stats['p50']:.2f} | P75={stats['p75']:.2f}")
+                print(f"  IQR: {stats['iqr']:.2f}")
+                print()
+
+        print("\n--- UTILIZACIÓN DE SERVIDORES (%) ---")
+        util_metrics = [
+            ("seller_utilization", "Vendedores"),
+            ("technician_utilization", "Técnicos"),
+            ("special_utilization", "Técnicos especializados"),
+        ]
+        for metric, label in util_metrics:
+            stats = self.calculate_stats(metric)
+            if stats:
+                print(f"{label}: {stats['mean']:.1f}% (IC 95%: [{stats['ci_lower']:.1f}, {stats['ci_upper']:.1f}])")
+
+        print("\n--- PORCENTAJE DE OCIOSIDAD (%) ---")
+        idle_metrics = [
+            ("seller_idle_pct", "Vendedores"),
+            ("technician_idle_pct", "Técnicos"),
+            ("special_idle_pct", "Técnicos especializados"),
+        ]
+        for metric, label in idle_metrics:
+            stats = self.calculate_stats(metric)
+            if stats:
+                print(f"{label}: {stats['mean']:.1f}% (IC 95%: [{stats['ci_lower']:.1f}, {stats['ci_upper']:.1f}])")
+
     def print_conclusions(self) -> None:
         """Imprime las conclusiones del análisis."""
         gain_stats = self.calculate_stats("total_amount")
         clients_stats = self.calculate_stats("generated_clients")
+        wait_seller_stats = self.calculate_stats("avg_wait_seller")
+        wait_tech_stats = self.calculate_stats("avg_wait_technician")
+        time_sys_stats = self.calculate_stats("avg_time_in_system")
+        seller_util = self.calculate_stats("seller_utilization")
+        tech_util = self.calculate_stats("technician_utilization")
+        special_util = self.calculate_stats("special_utilization")
 
         print("\n" + "=" * 70)
         print("CONCLUSIONES")
@@ -126,16 +181,21 @@ class ExperimentResults:
    - El sistema atiende aproximadamente {statistics.mean(self.get_metric('attended_clients')):.1f} clientes
    - Algunos clientes quedan sin atender al cierre: {clients_stats['mean'] - statistics.mean(self.get_metric('attended_clients')):.1f} en promedio
 
-3. TIPO DE SERVICIOS MÁS FRECUENTES:
+3. TIEMPOS DE ESPERA:
+   - Cola vendedores: {wait_seller_stats['mean']:.2f} min promedio (IC 95%: [{wait_seller_stats['ci_lower']:.2f}, {wait_seller_stats['ci_upper']:.2f}])
+   - Cola técnicos: {wait_tech_stats['mean']:.2f} min promedio (IC 95%: [{wait_tech_stats['ci_lower']:.2f}, {wait_tech_stats['ci_upper']:.2f}])
+   - Tiempo promedio en sistema: {time_sys_stats['mean']:.2f} min (P50={time_sys_stats['p50']:.2f}, IQR={time_sys_stats['iqr']:.2f})
+
+4. UTILIZACIÓN DE RECURSOS Y OCISIDAD:
+   - Vendedores: {seller_util['mean']:.1f}% utilizado (IC 95%: [{seller_util['ci_lower']:.1f}%, {seller_util['ci_upper']:.1f}%]) - Ociosidad: {100-seller_util['mean']:.1f}%
+   - Técnicos: {tech_util['mean']:.1f}% utilizado (IC 95%: [{tech_util['ci_lower']:.1f}%, {tech_util['ci_upper']:.1f}%]) - Ociosidad: {100-tech_util['mean']:.1f}%
+   - Técnicos especializados: {special_util['mean']:.1f}% utilizado (IC 95%: [{special_util['ci_lower']:.1f}%, {special_util['ci_upper']:.1f}%]) - Ociosidad: {100-special_util['mean']:.1f}%
+
+5. TIPO DE SERVICIOS MÁS FRECUENTES:
    - Tipo 1 (Garantía): {statistics.mean(self.get_metric('clients_type1')):.1f} clientes
-   - Tipo 2 (Sin garantía): {statistics.mean(self.get_metric('clients_type2')):.1f} clientes  
+   - Tipo 2 (Sin garantía): {statistics.mean(self.get_metric('clients_type2')):.1f} clientes
    - Tipo 3 (Cambio): {statistics.mean(self.get_metric('clients_type3')):.1f} clientes
    - Tipo 4 (Venta): {statistics.mean(self.get_metric('clients_type4')):.1f} clientes
-
-4. OBSERVACIONES:
-   - El tipo de servicio más frecuente es el 1 (reparación con garantía)
-   - La ganancia proviene principalmente de tipos 2, 3 y 4
-   - El sistema tiene capacidad suficiente para la demanda actual
 """)
 
     def save_to_csv(self, filename: str) -> None:
@@ -182,6 +242,8 @@ class ExperimentResults:
                     f.write(f"  Media: {stats['mean']:.2f}\n")
                     f.write(f"  Desviación estándar: {stats['std']:.2f}\n")
                     f.write(f"  Mín: {stats['min']:.2f} | Máx: {stats['max']:.2f}\n")
+                    f.write(f"  Percentiles: P25={stats['p25']:.2f} | P50={stats['p50']:.2f} | P75={stats['p75']:.2f}\n")
+                    f.write(f"  Rango intercuartílico (IQR): {stats['iqr']:.2f}\n")
                     f.write(f"  IC 95%: [{stats['ci_lower']:.2f}, {stats['ci_upper']:.2f}]\n\n")
 
             f.write("\n--- DISTRIBUCIÓN DE SERVICIOS (Promedio) ---\n")
@@ -191,8 +253,51 @@ class ExperimentResults:
                 pct = (count / total_services * 100) if total_services > 0 else 0
                 f.write(f"Tipo {i}: {count:.1f} clientes ({pct:.1f}%)\n")
 
+            f.write("\n--- TIEMPOS DE ESPERA ---\n")
+            wait_metrics = [
+                ("avg_wait_seller", "Cola vendedores (min)"),
+                ("avg_wait_technician", "Cola técnicos (min)"),
+                ("avg_wait_special", "Cola técnicos especiales (min)"),
+                ("avg_time_in_system", "Tiempo en sistema (min)"),
+            ]
+            for metric, label in wait_metrics:
+                stats = self.calculate_stats(metric)
+                if stats and stats['mean'] > 0:
+                    f.write(f"{label}:\n")
+                    f.write(f"  Media: {stats['mean']:.2f}\n")
+                    f.write(f"  Percentiles: P25={stats['p25']:.2f} | P50={stats['p50']:.2f} | P75={stats['p75']:.2f}\n")
+                    f.write(f"  IQR: {stats['iqr']:.2f}\n\n")
+
+            f.write("\n--- UTILIZACIÓN DE SERVIDORES (%) ---\n")
+            util_metrics = [
+                ("seller_utilization", "Vendedores"),
+                ("technician_utilization", "Técnicos"),
+                ("special_utilization", "Técnicos especializados"),
+            ]
+            for metric, label in util_metrics:
+                stats = self.calculate_stats(metric)
+                if stats:
+                    f.write(f"{label}: {stats['mean']:.1f}% (IC 95%: [{stats['ci_lower']:.1f}, {stats['ci_upper']:.1f}])\n")
+
+            f.write("\n--- PORCENTAJE DE OCIOSIDAD (%) ---\n")
+            idle_metrics = [
+                ("seller_idle_pct", "Vendedores"),
+                ("technician_idle_pct", "Técnicos"),
+                ("special_idle_pct", "Técnicos especializados"),
+            ]
+            for metric, label in idle_metrics:
+                stats = self.calculate_stats(metric)
+                if stats:
+                    f.write(f"{label}: {stats['mean']:.1f}%\n")
+
             gain_stats = self.calculate_stats("total_amount")
             clients_stats = self.calculate_stats("generated_clients")
+            wait_seller_stats = self.calculate_stats("avg_wait_seller")
+            wait_tech_stats = self.calculate_stats("avg_wait_technician")
+            time_sys_stats = self.calculate_stats("avg_time_in_system")
+            seller_util = self.calculate_stats("seller_utilization")
+            tech_util = self.calculate_stats("technician_utilization")
+            special_util = self.calculate_stats("special_utilization")
 
             f.write("\n" + "=" * 70 + "\n")
             f.write("CONCLUSIONES\n")
@@ -208,16 +313,21 @@ class ExperimentResults:
    - El sistema atiende aproximadamente {statistics.mean(self.get_metric('attended_clients')):.1f} clientes
    - Algunos clientes quedan sin atender al cierre: {clients_stats['mean'] - statistics.mean(self.get_metric('attended_clients')):.1f} en promedio
 
-3. TIPO DE SERVICIOS MÁS FRECUENTES:
+3. TIEMPOS DE ESPERA:
+   - Cola vendedores: {wait_seller_stats['mean']:.2f} min promedio
+   - Cola técnicos: {wait_tech_stats['mean']:.2f} min promedio
+   - Tiempo promedio en sistema: {time_sys_stats['mean']:.2f} min (P50={time_sys_stats['p50']:.2f}, IQR={time_sys_stats['iqr']:.2f})
+
+4. UTILIZACIÓN DE RECURSOS Y OCISIDAD:
+   - Vendedores: {seller_util['mean']:.1f}% utilizado - Ociosidad: {100-seller_util['mean']:.1f}%
+   - Técnicos: {tech_util['mean']:.1f}% utilizado - Ociosidad: {100-tech_util['mean']:.1f}%
+   - Técnicos especializados: {special_util['mean']:.1f}% utilizado - Ociosidad: {100-special_util['mean']:.1f}%
+
+5. TIPO DE SERVICIOS MÁS FRECUENTES:
    - Tipo 1 (Garantía): {statistics.mean(self.get_metric('clients_type1')):.1f} clientes
    - Tipo 2 (Sin garantía): {statistics.mean(self.get_metric('clients_type2')):.1f} clientes
    - Tipo 3 (Cambio): {statistics.mean(self.get_metric('clients_type3')):.1f} clientes
    - Tipo 4 (Venta): {statistics.mean(self.get_metric('clients_type4')):.1f} clientes
-
-4. OBSERVACIONES:
-   - El tipo de servicio más frecuente es el 1 (reparación con garantía)
-   - La ganancia proviene principalmente de tipos 2, 3 y 4
-   - El sistema tiene capacidad suficiente para la demanda actual
 """)
 
         print(f"Resumen guardado en: {filename}")
@@ -273,6 +383,16 @@ def run_single_simulation(
         "clients_type3": sim.clients_type3,
         "clients_type4": sim.clients_type4,
         "final_time": sim.time,
+        "avg_wait_seller": statistics.mean(sim.wait_times_seller) if sim.wait_times_seller else 0,
+        "avg_wait_technician": statistics.mean(sim.wait_times_technician) if sim.wait_times_technician else 0,
+        "avg_wait_special": statistics.mean(sim.wait_times_special) if sim.wait_times_special else 0,
+        "avg_time_in_system": statistics.mean(sim.time_in_system) if sim.time_in_system else 0,
+        "seller_utilization": (sum(sim.seller_busy_time) / (sim.server.total_sellers * sim.max_time) * 100) if sim.server.total_sellers > 0 else 0,
+        "technician_utilization": (sum(sim.technician_busy_time) / (sim.server.total_technicians * sim.max_time) * 100) if sim.server.total_technicians > 0 else 0,
+        "special_utilization": (sum(sim.special_busy_time) / (sim.server.total_special_technicians * sim.max_time) * 100) if sim.server.total_special_technicians > 0 else 0,
+        "seller_idle_pct": 100 - (sum(sim.seller_busy_time) / (sim.server.total_sellers * sim.max_time) * 100) if sim.server.total_sellers > 0 else 100,
+        "technician_idle_pct": 100 - (sum(sim.technician_busy_time) / (sim.server.total_technicians * sim.max_time) * 100) if sim.server.total_technicians > 0 else 100,
+        "special_idle_pct": 100 - (sum(sim.special_busy_time) / (sim.server.total_special_technicians * sim.max_time) * 100) if sim.server.total_special_technicians > 0 else 100,
     }
 
 

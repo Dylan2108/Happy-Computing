@@ -76,6 +76,14 @@ class Simulation:
         self.clients_type4 = 0
         self.clients_in_system = 0
 
+        self.wait_times_seller = []
+        self.wait_times_technician = []
+        self.wait_times_special = []
+        self.time_in_system = []
+        self.seller_busy_time = []
+        self.technician_busy_time = []
+        self.special_busy_time = []
+
     def log(self, *args, **kwargs) -> None:
         """Imprime mensajes solo si verbose=True."""
         if self.verbose:
@@ -206,13 +214,16 @@ class Simulation:
             self.log(f"minuto {self.time:.2f}: El cliente {client.id} está siendo atendido por un vendedor")
             time_of_work = seller_service_time()
             end = self.time + time_of_work
+            client.service_start_time = self.time
+            self.seller_busy_time.append(time_of_work)
 
             self.save_event(
                 Event(end, "seller_end", client)
             )
         else:
+            client.wait_start_seller = self.time
             self.sellers_queue.append(client)
-            self.log(f"minuto {self.time:.2f}: El cliente {client.id} se colocou en la cola de los vendedores ya que no había ninguno disponible")
+            self.log(f"minuto {self.time:.2f}: El cliente {client.id} se coloco en la cola de los vendedores ya que no había ninguno disponible")
     
     def seller_end(self, event: Event) -> None:
         """
@@ -236,6 +247,11 @@ class Simulation:
             self.server.free_sellers -= 1
             time_of_work = seller_service_time()
             end = self.time + time_of_work
+            if next_client.wait_start_seller is not None:
+                self.wait_times_seller.append(self.time - next_client.wait_start_seller)
+                next_client.wait_start_seller = None
+            next_client.service_start_time = self.time
+            self.seller_busy_time.append(time_of_work)
 
             self.save_event(
                 Event(end, "seller_end", next_client)
@@ -252,6 +268,7 @@ class Simulation:
             self.total_amount += 750
             self.attended_clients += 1
             self.clients_in_system -= 1
+            self.time_in_system.append(self.time - client.arrival_time)
             self.log(f"minuto {self.time:.2f}: Ganancia generada hasta el momento: ${self.total_amount}")
     
     def send_to_repair(self, client: Client) -> None:
@@ -272,6 +289,8 @@ class Simulation:
             self.server.free_technicians -= 1
             time_of_work = repair_time()
             end = self.time + time_of_work
+            client.wait_start_technician = self.time
+            self.technician_busy_time.append(time_of_work)
             self.save_event(
                 Event(end, "technichian_end", client)
             )
@@ -283,11 +302,13 @@ class Simulation:
             self.server.free_special_technicians -= 1
             time_of_work = repair_time()
             end = self.time + time_of_work
+            client.wait_start_special = self.time
+            self.special_busy_time.append(time_of_work)
             self.save_event(
                 Event(end, "special_technichian_end", client)
             )
         else:
-            self.log(f"minuto {self.time:.2f}: El cliente {client.id} se colocou en la cola de los técnicos ya que no había ninguno disponible")
+            self.log(f"minuto {self.time:.2f}: El cliente {client.id} se放在了cola de los técnicos ya que no había ninguno disponible")
             self.technicians_queue.append(client)
     
     def send_to_change_equipment(self, client: Client) -> None:
@@ -306,6 +327,8 @@ class Simulation:
             self.server.free_special_technicians -= 1
             time_of_work = equipment_change_time()
             end = self.time + time_of_work
+            client.wait_start_special = self.time
+            self.special_busy_time.append(time_of_work)
             self.save_event(
                 Event(end, "special_technichian_end", client)
             )
@@ -338,6 +361,7 @@ class Simulation:
         
         self.attended_clients += 1
         self.clients_in_system -= 1
+        self.time_in_system.append(self.time - client.arrival_time)
 
         if self.technicians_queue:
             next_client: Client = self.technicians_queue.popleft()
@@ -345,6 +369,11 @@ class Simulation:
             self.server.free_technicians -= 1
             time_of_work = repair_time()
             end = self.time + time_of_work
+            if next_client.wait_start_technician is not None:
+                self.wait_times_technician.append(self.time - next_client.wait_start_technician)
+                next_client.wait_start_technician = None
+            next_client.wait_start_technician = self.time
+            self.technician_busy_time.append(time_of_work)
             self.save_event(
                 Event(end, "technichian_end", next_client)
             )
@@ -380,6 +409,7 @@ class Simulation:
         
         self.attended_clients += 1
         self.clients_in_system -= 1
+        self.time_in_system.append(self.time - client.arrival_time)
 
         if self.special_technicians_queue:
             next_client: Client = self.special_technicians_queue.popleft()
@@ -387,6 +417,11 @@ class Simulation:
             self.server.free_special_technicians -= 1
             time_of_work = equipment_change_time()
             end = self.time + time_of_work
+            if next_client.wait_start_special is not None:
+                self.wait_times_special.append(self.time - next_client.wait_start_special)
+                next_client.wait_start_special = None
+            next_client.wait_start_special = self.time
+            self.special_busy_time.append(time_of_work)
             self.save_event(
                 Event(end, "special_technichian_end", next_client)
             )
@@ -396,6 +431,11 @@ class Simulation:
             self.server.free_special_technicians -= 1
             time_of_work = repair_time()
             end = self.time + time_of_work
+            if next_client.wait_start_technician is not None:
+                self.wait_times_special.append(self.time - next_client.wait_start_technician)
+                next_client.wait_start_technician = None
+            next_client.wait_start_special = self.time
+            self.special_busy_time.append(time_of_work)
             self.save_event(
                 Event(end, "special_technichian_end", next_client)
             )
